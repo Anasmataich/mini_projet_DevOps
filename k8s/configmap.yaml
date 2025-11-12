@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eshop-frontend-config
+data:
+  VITE_API_URL: "https://api.eshop.example.com"
+  VITE_APP_NAME: "E-Shop"
+  VITE_APP_VERSION: "1.0.0"
