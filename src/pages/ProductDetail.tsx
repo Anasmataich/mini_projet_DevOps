@@ -1,56 +1,62 @@
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Star, Truck, Shield } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import Header from '../components/Header';
-import { products } from '../data/products';
-import { useCart } from '../context/CartContext';
-import { toast } from 'sonner';
+import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ShoppingCart, Star, Truck, Shield } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import Header from "../components/Header";
+import { useCart } from "../context/CartContext";
+import { toast } from "sonner";
+import { Product } from '../types';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useCart();
-  const product = products.find((p) => p.id === id);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // ⬇️ جلب المنتج من الباكند
+  useEffect(() => {
+    fetch(`http://localhost:5000/products/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setProduct(data || null);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-xl">
+        Chargement...
+      </div>
+    );
+  }
 
   if (!product) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-  <img
-    src="/images/not-found.svg"
-    alt="Produit non trouvé"
-    className="w-48 h-48 mb-6"
-  />
-  <h1 className="text-3xl font-bold mb-2 text-red-600">Produit non trouvé</h1>
-  <p className="text-lg text-muted-foreground mb-6">
-    Désolé, nous n'avons pas trouvé ce produit. Découvrez nos produits populaires ci-dessous !
-  </p>
-  <Link to="/products">
-    <Button size="lg" className="flex items-center space-x-2">
-      <span>Retour aux produits</span>
-      <ArrowLeft className="h-4 w-4" />
-    </Button>
-  </Link>
-
-  {/* مثال لعرض منتجات مختارة */}
-  <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-    {products.slice(0, 4).map((product) => (
-      <Card key={product.id}>
-        <CardContent className="text-center">
-          <img src={product.image} alt={product.name} className="w-full h-32 object-cover rounded mb-2" />
-          <h3 className="font-semibold">{product.name}</h3>
-          <p className="text-sm text-muted-foreground">{product.price.toFixed(2)} €</p>
-          <Link to={`/products/${product.id}`}>
-            <Button variant="outline" size="sm" className="mt-2">
-              Voir le produit
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-</div>
-
+        <img
+          src="/images/not-found.svg"
+          alt="Produit non trouvé"
+          className="w-48 h-48 mb-6"
+        />
+        <h1 className="text-3xl font-bold mb-2 text-red-600">
+          Produit non trouvé
+        </h1>
+        <p className="text-lg text-muted-foreground mb-6">
+          Désolé, nous n'avons pas trouvé ce produit.
+        </p>
+        <Link to="/products">
+          <Button size="lg">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour aux produits
+          </Button>
+        </Link>
+      </div>
     );
   }
 
@@ -62,7 +68,7 @@ export default function ProductDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <div className="container py-8">
         <Link to="/products">
           <Button variant="ghost" className="mb-6">
@@ -86,6 +92,8 @@ export default function ProductDetail() {
             <div>
               <Badge className="mb-2">{product.category}</Badge>
               <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
+
+              {/* Rating */}
               <div className="flex items-center space-x-2 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -93,8 +101,8 @@ export default function ProductDetail() {
                       key={i}
                       className={`h-5 w-5 ${
                         i < Math.floor(product.rating)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
                       }`}
                     />
                   ))}
@@ -103,9 +111,11 @@ export default function ProductDetail() {
                   {product.rating} / 5
                 </span>
               </div>
+
               <p className="text-3xl font-bold text-primary mb-6">
-                {product.price.toFixed(2)} €
+                  {Number(product.price).toFixed(2)} €
               </p>
+
             </div>
 
             <div>
@@ -137,15 +147,17 @@ export default function ProductDetail() {
               disabled={product.stock === 0}
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
-              {product.stock > 0 ? 'Ajouter au panier' : 'Rupture de stock'}
+              {product.stock > 0 ? "Ajouter au panier" : "Rupture de stock"}
             </Button>
 
             <Card>
               <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Informations de livraison</h3>
+                <h3 className="font-semibold mb-2">
+                  Informations de livraison
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  Livraison standard: 3-5 jours ouvrables<br />
-                  Livraison express: 1-2 jours ouvrables (supplément de 9,99€)
+                  Livraison standard: 3-5 jours ouvrables <br />
+                  Livraison express: 1-2 jours (supplément 9,99€)
                 </p>
               </CardContent>
             </Card>

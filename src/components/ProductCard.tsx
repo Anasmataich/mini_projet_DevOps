@@ -3,7 +3,7 @@ import { ShoppingCart, Star } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardFooter } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Product } from '../data/products';
+import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { toast } from 'sonner';
 
@@ -50,7 +50,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0 flex items-center justify-between">
         <span className="text-2xl font-bold text-primary">
-          {product.price.toFixed(2)} €
+          {Number(product.price).toFixed(2)} €
         </span>
         <Button onClick={handleAddToCart} size="sm">
           <ShoppingCart className="h-4 w-4 mr-2" />
@@ -60,3 +60,4 @@ export default function ProductCard({ product }: ProductCardProps) {
     </Card>
   );
 }
+

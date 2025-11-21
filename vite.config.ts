@@ -1,23 +1,26 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
-import path from 'path';
-import { viteSourceLocator } from '@metagptx/vite-plugin-source-locator';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
+import { viteSourceLocator } from "@metagptx/vite-plugin-source-locator";
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   plugins: [
     viteSourceLocator({
-      prefix: 'mgx',
+      prefix: "mgx",
     }),
     react(),
   ],
   server: {
-    watch: { usePolling: true, interval: 800 /* 300~1500 */ },
+    host: true,          // يسمح بالوصول من خارج Docker
+    port: 5173,          // المنفذ الرسمي لـ Vite
+    watch: {
+      usePolling: true,  // مهم داخل Docker
+      interval: 800,
+    },
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 }));
-

@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { saveUser, loginUser } from '../utils/auth';
 
 export default function Login() {
-  const navigate = useNavigate(); // ← نستخدمها للتوجيه
+  const navigate = useNavigate(); 
   const [isLoading, setIsLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -31,7 +31,7 @@ export default function Login() {
       const success = loginUser(loginEmail, loginPassword);
       if (success) {
         toast.success('Connexion réussie !');
-        navigate('/products'); // ← التوجيه التلقائي بعد تسجيل الدخول
+        navigate('/products'); 
       } else {
         toast.error('Email ou mot de passe incorrect.');
       }
@@ -60,7 +60,7 @@ export default function Login() {
           password: '',
           confirmPassword: ''
         });
-        navigate('/products'); // ← التوجيه التلقائي بعد التسجيل
+        navigate('/products'); 
       } else {
         toast.error('Cet email est déjà utilisé !');
       }

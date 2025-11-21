@@ -1,17 +1,31 @@
-node_modules
-dist
-.git
+# Ignore MySQL volume (critical)
+mysql-data/
+
+# Node modules
+node_modules/
+*/node_modules/
+
+# Build outputs
+build/
+dist/
+.next/
+
+# Git
+.git/
 .gitignore
-*.md
-.env
-.env.local
-.vscode
-.idea
-coverage
-*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.DS_Store
-Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+.env.test

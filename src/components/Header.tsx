@@ -7,9 +7,9 @@ import { Badge } from '../components/ui/badge';
 import { useCart } from '../context/CartContext';
 
 export default function Header() {
-  const { getCartCount } = useCart();
-  const cartCount = getCartCount();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // حالة القائمة
+  const { getCartItemsCount } = useCart();
+  const cartCount = getCartItemsCount();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 transition-colors">

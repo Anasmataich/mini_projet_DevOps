@@ -1,40 +1,79 @@
 version: '3.8'
 
 services:
-  # Frontend application
+
+  mysql:
+    image: mysql:8
+    container_name: eshop-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: eshop
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - eshop-network
+
+ 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: eshop-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    networks:
+      - eshop-network
+
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eshop-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: eshop
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+    networks:
+      - eshop-network
+
+
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: eshop-frontend
+    restart: unless-stopped
     ports:
       - "80:80"
-    environment:
-      - NODE_ENV=production
-    restart: unless-stopped
     networks:
       - eshop-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    depends_on:
+      - backend
 
-  # Development environment (optional)
   frontend-dev:
     build:
-      context: .
+      context: ./src
       dockerfile: Dockerfile.dev
     container_name: eshop-frontend-dev
     ports:
       - "5173:5173"
     volumes:
-      - .:/app
+      - ./src:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
-    command: pnpm run dev
+    command: npm run dev -- --host
     networks:
       - eshop-network
     profiles:

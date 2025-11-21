@@ -1,43 +1,60 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product } from '../data/products';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { toast } from 'sonner';
 
-interface CartItem extends Product {
+// ✅ Interface exportée
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
   quantity: number;
+  image: string;
+  stock: number;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: any) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   getCartTotal: () => number;
-  getCartCount: () => number;
+  getCartItemsCount: () => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
-
-  const addToCart = (product: Product) => {
+  const addToCart = (product: any) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
+      
       if (existingItem) {
+        // Vérifier le stock
+        if (existingItem.quantity >= product.stock) {
+          toast.error('Stock insuffisant');
+          return prevCart;
+        }
+        
         return prevCart.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      
+      return [
+        ...prevCart,
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          image: product.image,
+          stock: product.stock,
+        },
+      ];
     });
   };
 
@@ -46,14 +63,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
+    if (quantity < 1) {
       removeFromCart(productId);
       return;
     }
+
     setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+      prevCart.map((item) => {
+        if (item.id === productId) {
+          // Vérifier le stock
+          if (quantity > item.stock) {
+            toast.error('Stock insuffisant');
+            return item;
+          }
+          return { ...item, quantity };
+        }
+        return item;
+      })
     );
   };
 
@@ -65,7 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
-  const getCartCount = () => {
+  const getCartItemsCount = () => {
     return cart.reduce((count, item) => count + item.quantity, 0);
   };
 
@@ -78,7 +104,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         clearCart,
         getCartTotal,
-        getCartCount,
+        getCartItemsCount,
       }}
     >
       {children}
