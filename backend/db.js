@@ -12,8 +12,25 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-pool.getConnection()
-  .then(() => console.log("✅ Connected to MySQL Database inside Docker"))
-  .catch(err => console.error("❌ MySQL Connection Failed:", err));
+// Retry logic for MySQL connection
+const retryConnection = async (retries = 5, delay = 3000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const connection = await pool.getConnection();
+      console.log("✅ Connected to MySQL Database inside Docker");
+      connection.release();
+      return true;
+    } catch (err) {
+      console.warn(`⏳ Retry ${i + 1}/${retries} - MySQL not ready yet...`);
+      if (i < retries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        console.error("❌ MySQL Connection Failed after retries:", err.message);
+        return false;
+      }
+    }
+  }
+};
 
+retryConnection();
 export default pool;

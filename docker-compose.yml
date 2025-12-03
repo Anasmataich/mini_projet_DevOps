@@ -13,10 +13,16 @@ services:
       - "3306:3306"
     volumes:
       - ./mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
     networks:
       - eshop-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
- 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: eshop-phpmyadmin
@@ -29,7 +35,6 @@ services:
       PMA_PASSWORD: root
     networks:
       - eshop-network
-
 
   backend:
     build:
@@ -45,10 +50,35 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - eshop-network
 
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: eshop-order-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: eshop
+      PORT: 5001
+      AUTH_SERVICE_URL: "http://backend:5000"
+      PAYMENT_SERVICE_URL: "http://backend:5000"
+      MOCK_SERVICES: 'false'
+    ports:
+      - "5001:5001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - eshop-network
 
   frontend:
     build:
