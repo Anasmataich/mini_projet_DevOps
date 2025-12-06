@@ -248,6 +248,28 @@ pnpm run test
 
 # Tests E2E (à implémenter)
 pnpm run test:e2e
+ 
+### Exécution locale (Docker Compose)
+Pour démarrer rapidement tous les services (MySQL, backend, order-service, frontend):
+```powershell
+# Depuis la racine du projet
+docker-compose down
+docker-compose up --build
+```
+
+Services exposés (hôte → conteneur): MySQL `3306`, phpMyAdmin `8081`, backend `5000`, order-service `5001`, frontend `80`.
+
+### Vérifier que MySQL a appliqué l'init SQL
+Exécutez ces commandes pour vérifier que la base `eshop` et les tables ont bien été créées (utiliser `es hop-mysql` comme nom de conteneur si vous avez gardé la configuration par défaut):
+```powershell
+# Lister les tables
+docker exec -it eshop-mysql mysql -uroot -proot -e "USE eshop; SHOW TABLES;"
+
+# Vérifier les données d'exemple
+docker exec -it eshop-mysql mysql -uroot -proot -e "USE eshop; SELECT COUNT(*) AS product_count FROM products; SELECT COUNT(*) AS order_count FROM orders;"
+```
+
+Remarque: la source de vérité pour l'initialisation de la base est `mysql-init/init.sql` dans le dépôt.
 📝 Scripts disponibles
 Commande	Description
 pnpm run dev	Démarre le serveur de développement
